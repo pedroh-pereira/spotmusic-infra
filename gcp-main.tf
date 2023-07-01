@@ -22,7 +22,7 @@ resource "google_sql_database_instance" "mysql-instance" {
   deletion_protection  = "true"
 }
 
-resource "google_sql_database" “mysql-database” {
+resource "google_sql_database" "mysql-database" {
   name = var.cloud_sql_database_name
   instance = "${google_sql_database_instance.mysql-instance.name}"
   charset = "utf8"

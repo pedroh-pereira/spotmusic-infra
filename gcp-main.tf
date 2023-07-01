@@ -1,22 +1,36 @@
-# Cria uma VM no Google Cloud
-resource "google_compute_instance" "firstvm" {
-  name         = "helloworld"
-  machine_type = "n1-standard-1"
-  zone         = "var.zone"
+resource "google_artifact_registry_repository" "docker-repo" {
+  location = var.region
+  repository_id = var.repository_id
+  description = "Imagens Docker"
+  format = "DOCKER"
+}
 
-  # Defini a Imagem da VM
-  boot_disk {
-    initialize_params {
-      image = "ubuntu-2004-focal-v20230213"
-    }
+resource "google_sql_database" "database_deletion_policy" {
+  name     = "mysql-spotmusic-database"
+  instance = google_sql_database_instance.mysql-instance.name
+  deletion_policy = "ABANDON"
+}
+
+resource "google_sql_database_instance" "mysql-instance" {
+  name             = "mysql-spotmusic-instance"
+  region           = var.region
+  database_version = var.cloud_sql_database_version
+  settings {
+    tier = var.cloud_sql_tier
   }
 
-  # Habilita rede para a VM com um IP público
-  network_interface {
-    network = "default" # Estamos usando a VPC default que já vem por padrão no projeto.
+  deletion_protection  = "true"
+}
 
-    access_config {
-    // A presença do bloco access_config, mesmo sem argumentos, garante que a instância estará acessível pela internet.
-    }
-  }
+resource "google_sql_database" “mysql-database” {
+  name = var.cloud_sql_database_name
+  instance = "${google_sql_database_instance.mysql-instance.name}"
+  charset = "utf8"
+  collation = "utf8_general_ci"
+}
+
+resource "google_sql_user" "mysql-users" {
+  name = var.cloud_sql_user
+  instance = "${google_sql_database_instance.mysql-database.name}"
+  password = var.cloud_sql_password
 }

@@ -31,6 +31,6 @@ resource "google_sql_database" "mysql-database" {
 
 resource "google_sql_user" "mysql-users" {
   name = var.cloud_sql_user
-  instance = "${google_sql_database_instance.mysql-database.name}"
+  instance = "${google_sql_database_instance.mysql-instance.name}"
   password = var.cloud_sql_password
 }
